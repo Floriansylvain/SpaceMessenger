@@ -10,7 +10,8 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "firebase": "^9.17.0",
+    "firebase": "^9.17.1",
+    "firebase-admin": "^11.5.0",
     "pinia": "^2.0.28",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"

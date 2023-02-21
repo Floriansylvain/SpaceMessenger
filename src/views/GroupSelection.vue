@@ -1,24 +1,37 @@
 <script setup lang="ts">
-import { initializeApp } from "firebase/app"
+import { useSessionStore } from "@/stores/useSessionStore"
+import { db } from "@/utils/firestore"
+import { collection, addDoc, type DocumentData } from "firebase/firestore"
+import { ref } from "vue"
+import { useRouter } from "vue-router"
 
-const firebaseConfig = {
-	apiKey: "AIzaSyDVyP3WELYiQL8OBGFaLpCkZr8gA9cVu-4",
-	authDomain: "spacemessenger-fsylvain.firebaseapp.com",
-	projectId: "spacemessenger-fsylvain",
-	storageBucket: "spacemessenger-fsylvain.appspot.com",
-	messagingSenderId: "103202352459",
-	appId: "1:103202352459:web:c41f6a1e35492bbd8e4cce"
+const router = useRouter()
+const sessionStore = useSessionStore()
+
+const group = ref("")
+
+async function getGroup(): Promise<DocumentData | undefined> {
+	try {
+		return await addDoc(collection(db, "groups"), {})
+	} catch (error) {
+		console.error("Error adding document: ", error)
+		return undefined
+	}
 }
 
-const app = initializeApp(firebaseConfig)
+async function createGroup() {
+	const group = await getGroup()
 
+	if (group?.id == undefined) return
+
+	sessionStore.groupId = group.id
+	router.push(`/group/${group.id}`)
+}
 </script>
 
 <template>
 	<h1>Space Messenger</h1>
-	<button>create a group</button>
+	<button @click="() => createGroup()">create a group</button>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
