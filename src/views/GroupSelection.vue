@@ -2,13 +2,10 @@
 import { useSessionStore } from "@/stores/useSessionStore"
 import { db } from "@/utils/firestore"
 import { collection, addDoc, type DocumentData } from "firebase/firestore"
-import { ref } from "vue"
 import { useRouter } from "vue-router"
 
 const router = useRouter()
 const sessionStore = useSessionStore()
-
-const group = ref("")
 
 async function getGroup(): Promise<DocumentData | undefined> {
 	try {
