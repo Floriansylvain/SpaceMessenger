@@ -5,8 +5,10 @@ import { db } from "@/utils/firestore"
 import {
 	addDoc,
 	collection,
+	FieldValue,
 	onSnapshot,
 	QuerySnapshot,
+	serverTimestamp,
 	type DocumentData,
 } from "@firebase/firestore"
 import { onMounted, ref, type Ref } from "vue"
@@ -27,12 +29,14 @@ const messagesPath = collection(
 interface Message {
 	author: string
 	message: string
+	timestamp: FieldValue
 }
 
 async function postMessage(): Promise<void> {
 	const message: Message = {
 		author: sessionStore.nickname as string,
 		message: currentMessage.value,
+		timestamp: serverTimestamp(),
 	}
 
 	const messageReference = await addDoc(messagesPath, message)
@@ -40,7 +44,18 @@ async function postMessage(): Promise<void> {
 }
 
 function updateMessages(querSnap: QuerySnapshot<DocumentData>): void {
-	console.log(querSnap.docs) // TODO
+	messages.value = querSnap.docs.map((x) =>
+		x.data({ serverTimestamps: "estimate" })
+	)
+
+	messages.value = messages.value.sort((a, b) => {
+		return a.timestamp.toDate() - b.timestamp.toDate()
+	})
+}
+
+async function onFormSubmit() {
+	await postMessage()
+	currentMessage.value = ""
 }
 
 onMounted(() => {
@@ -55,13 +70,13 @@ onMounted(() => {
 
 	<template v-else>
 		<div class="messages">
-			<div>
-				<h3>Author</h3>
-				<p>Author's message</p>
+			<div v-for="message of messages">
+				<h3>{{ message.author }}</h3>
+				<p>{{ message.message }}</p>
 			</div>
 		</div>
 
-		<form @submit.prevent="postMessage">
+		<form @submit.prevent="onFormSubmit">
 			<label for="message">Message</label>
 			<input
 				type="text"
