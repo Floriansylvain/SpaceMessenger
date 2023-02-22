@@ -15,6 +15,7 @@ import { onMounted, ref, type Ref } from "vue"
 
 const sessionStore = useSessionStore()
 const messages: Ref<Array<DocumentData>> = ref([])
+const messagesDiv: Ref<HTMLInputElement | undefined> = ref()
 
 const currentMessage = ref("")
 const lastUserMessageId = ref("")
@@ -39,11 +40,13 @@ async function postMessage(): Promise<void> {
 }
 
 function updateMessages(querSnap: QuerySnapshot<DocumentData>): void {
-	messages.value = querSnap.docs.map((x) => x.data({ serverTimestamps: "estimate" }))
+	messages.value = querSnap.docs
+		.map((x) => x.data({ serverTimestamps: "estimate" }))
+		.sort((a, b) => {
+			return a.timestamp.toDate() - b.timestamp.toDate()
+		})
 
-	messages.value = messages.value.sort((a, b) => {
-		return a.timestamp.toDate() - b.timestamp.toDate()
-	})
+	scrollMessagesDiv()
 }
 
 async function onFormSubmit() {
@@ -59,10 +62,16 @@ function getMessageClass(message: Message) {
 	return message.author === sessionStore.nickname ? "author-message" : "message"
 }
 
+function scrollMessagesDiv() {
+	if (!messagesDiv.value) return
+	messagesDiv.value.scrollTop = messagesDiv.value.scrollHeight
+}
+
 onMounted(() => {
 	if (!sessionStore.groupId) return
 
 	onSnapshot(messagesPath, updateMessages)
+	scrollMessagesDiv()
 })
 </script>
 
@@ -74,7 +83,7 @@ onMounted(() => {
 			share the link: <a :href="getShareUrl()" target="_blank">{{ getShareUrl() }}</a>
 		</p>
 
-		<div class="messages">
+		<div class="messages" ref="messagesDiv">
 			<template v-for="message of messages">
 				<div :class="getMessageClass(message as Message)">
 					<h3>{{ message.author }}</h3>
@@ -117,7 +126,7 @@ onMounted(() => {
 
 	padding: 16px 0;
 
-	max-height: 100%;
+	height: 100%;
 	overflow: scroll;
 }
 
