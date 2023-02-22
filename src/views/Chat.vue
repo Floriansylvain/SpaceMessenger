@@ -19,12 +19,7 @@ const messages: Ref<Array<DocumentData>> = ref([])
 const currentMessage = ref("")
 const lastUserMessageId = ref("")
 
-const messagesPath = collection(
-	db,
-	"groups",
-	sessionStore.groupId as string,
-	"messages"
-)
+const messagesPath = collection(db, "groups", sessionStore.groupId as string, "messages")
 
 interface Message {
 	author: string
@@ -44,9 +39,7 @@ async function postMessage(): Promise<void> {
 }
 
 function updateMessages(querSnap: QuerySnapshot<DocumentData>): void {
-	messages.value = querSnap.docs.map((x) =>
-		x.data({ serverTimestamps: "estimate" })
-	)
+	messages.value = querSnap.docs.map((x) => x.data({ serverTimestamps: "estimate" }))
 
 	messages.value = messages.value.sort((a, b) => {
 		return a.timestamp.toDate() - b.timestamp.toDate()
@@ -56,6 +49,14 @@ function updateMessages(querSnap: QuerySnapshot<DocumentData>): void {
 async function onFormSubmit() {
 	await postMessage()
 	currentMessage.value = ""
+}
+
+function getShareUrl() {
+	return window.location.href
+}
+
+function getMessageClass(message: Message) {
+	return message.author === sessionStore.nickname ? "author-message" : "message"
 }
 
 onMounted(() => {
@@ -68,34 +69,104 @@ onMounted(() => {
 <template>
 	<NicknameSelection v-if="!sessionStore.nickname"></NicknameSelection>
 
-	<template v-else>
+	<div class="container" v-else>
+		<p>
+			share the link: <a :href="getShareUrl()" target="_blank">{{ getShareUrl() }}</a>
+		</p>
+
 		<div class="messages">
-			<div v-for="message of messages">
-				<h3>{{ message.author }}</h3>
-				<p>{{ message.message }}</p>
-			</div>
+			<template v-for="message of messages">
+				<div :class="getMessageClass(message as Message)">
+					<h3>{{ message.author }}</h3>
+					<p>{{ message.message }}</p>
+				</div>
+			</template>
 		</div>
 
 		<form @submit.prevent="onFormSubmit">
-			<label for="message">Message</label>
 			<input
 				type="text"
 				name="message"
 				id="message"
 				v-model="currentMessage"
+				placeholder="Your message"
 			/>
-			<button type="submit">Send</button>
+			<button type="submit" class="button-primary">Send</button>
 		</form>
-	</template>
+	</div>
 </template>
 
 <style scoped>
-.messages > div {
+.container {
+	display: flex;
+	flex-direction: column;
+
+	height: 100vh;
 	padding: 16px;
 }
 
-.messages > div h3,
-.messages > div p {
+.container > p {
+	color: var(--color-neutral-light);
+	text-align: center;
+}
+
+.messages {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+
+	padding: 16px 0;
+
+	max-height: 100%;
+	overflow: scroll;
+}
+
+.author-message,
+.message {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.author-message p,
+.message p {
+	width: fit-content;
+	padding: 16px;
 	margin: 0;
+
+	color: #fff;
+
+	border: solid 2px var(--color-neutral-light);
+	border-radius: 16px;
+}
+
+.author-message h3,
+.message h3 {
+	margin: 0 8px;
+
+	font-size: 16px;
+	font-stretch: semi-expanded;
+	font-weight: 500;
+
+	color: #fff;
+}
+
+form {
+	display: flex;
+	gap: 16px;
+}
+
+form > input {
+	width: 100%;
+}
+
+.author-message h3,
+.author-message {
+	place-self: flex-end;
+}
+
+.author-message p {
+	border: none;
+	background-color: var(--color-neutral-light);
 }
 </style>

@@ -27,8 +27,30 @@ async function createGroup() {
 </script>
 
 <template>
-	<h1>Space Messenger</h1>
-	<button @click="() => createGroup()">create a group</button>
+	<div>
+		<h1>Space Messenger</h1>
+		<button @click="() => createGroup()" class="button-primary">
+			create a group
+		</button>
+	</div>
 </template>
 
-<style scoped></style>
+<style scoped>
+div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 32px;
+
+	min-height: 100vh;
+	padding: 16px;
+
+	color: var(--color-secondary);
+}
+
+div button {
+	width: 100%;
+	max-width: 250px;
+}
+</style>

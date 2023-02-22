@@ -11,13 +11,36 @@ function setNickname() {
 </script>
 
 <template>
-	<h2>Group {{ sessionStore.groupId }}</h2>
+	<div>
+		<h2>
+			Group <br />
+			{{ sessionStore.groupId }}
+		</h2>
 
-	<form @submit.prevent="setNickname">
-		<label for="nickname">Nickname</label>
-		<input type="text" id="nickname" name="nickname" v-model="nickname" />
-		<button type="submit">confirm</button>
-	</form>
+		<form @submit.prevent="setNickname">
+			<input
+				type="text"
+				id="nickname"
+				name="nickname"
+				v-model="nickname"
+				placeholder="enter a nickname"
+			/>
+		</form>
+	</div>
 </template>
 
-<style scoped></style>
+<style scoped>
+div {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	min-height: 100vh;
+}
+
+div > h2 {
+	text-align: center;
+	color: var(--color-secondary);
+}
+</style>
